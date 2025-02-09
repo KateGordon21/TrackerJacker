@@ -1,0 +1,74 @@
+services:
+  web:
+    container_name: tracker-jacker-web
+    build:
+      context: ../frontend/
+      dockerfile: ../frontend/Dockerfile
+      target: dev
+    init: true
+    volumes:
+      - type: bind
+        source: ../frontend/
+        target: /home/node/app/
+      - type: volume
+        target: /home/node/app/node_modules
+      - type: bind
+        source: ../frontend/vite.config.ts
+        target: /home/node/app/vite.config.ts
+    environment:
+      - VITE_BACKEND_URL=http://django-api:7004/
+    ports:
+      - 7001:5173
+    depends_on:
+      django-api:
+        condition: service_healthy
+
+  django-api:
+    container_name: tracker-jacker-django-api
+    build:
+      context: ../backend/
+      dockerfile: ../backend/Dockerfile
+    ports:
+      - 7004:7004
+    volumes:
+      - ../backend:/backend
+    environment:
+      - DEBUG=1
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:7004/api/health/"]
+      interval: 30s
+      retries: 3
+      start_period: 10s
+      timeout: 5s
+
+  db:
+    image: mysql:8.2.0
+    container_name: tracker-jacker-mysql
+    ports:
+      - 7003:3306
+    environment:
+      DB_PASSWORD: dbroot
+    command: --default-authentication-plugin=caching_sha2_password
+    volumes:
+      - "tracker_jacker_db:/var/lib/mysql"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: tracker-jacker-phpmyadmin
+    ports:
+      - 7002:80
+    environment:
+      PMA_HOSTS: db
+      UPLOAD_LIMIT: 50M
+
+# Define volumes here if needed
+volumes:
+  tracker_jacker_db: {}
