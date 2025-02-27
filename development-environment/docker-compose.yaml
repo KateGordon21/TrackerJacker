@@ -17,6 +17,7 @@ services:
         target: /home/node/app/vite.config.ts
     environment:
       - VITE_BACKEND_URL=http://django-api:7004/
+      - VITE_APP_NAME=Tracker Jacker
     ports:
       - 7001:5173
     depends_on:
@@ -34,6 +35,15 @@ services:
       - ../backend:/backend
     environment:
       - DEBUG=1
+      - DJANGO_SUPERUSER_USERNAME=admin
+      - DJANGO_SUPERUSER_EMAIL=admin@example.com
+      - DJANGO_SUPERUSER_PASSWORD=adminpassword
+    command: >
+      sh -c "python manage.py wait_for_db &&
+             python manage.py migrate &&
+             python manage.py collectstatic --noinput &&
+             python manage.py createsuperuser --noinput || true &&
+             python manage.py runserver 0.0.0.0:7004"
     depends_on:
       db:
         condition: service_healthy
@@ -50,7 +60,10 @@ services:
     ports:
       - 7003:3306
     environment:
-      DB_PASSWORD: dbroot
+      MYSQL_ROOT_PASSWORD: dbroot
+      MYSQL_DATABASE: tracker_jacker
+      MYSQL_USER: django_user
+      MYSQL_PASSWORD: django_password
     command: --default-authentication-plugin=caching_sha2_password
     volumes:
       - "tracker_jacker_db:/var/lib/mysql"

@@ -19,7 +19,6 @@ RUN curl -sSL https://github.com/vishnubob/wait-for-it/raw/master/wait-for-it.sh
 COPY /backend/ /backend
 
 # Expose port 7012 to allow external access
-EXPOSE 7012
+EXPOSE 7004
 
-# Run the Django application with auto-reload
-CMD ["python", "manage.py", "runserver", "0.0.0.0:7004"]
+CMD ["sh", "-c", "python manage.py migrate && python manage.py migrate backend && python manage.py runserver 0.0.0.0:7004"]
