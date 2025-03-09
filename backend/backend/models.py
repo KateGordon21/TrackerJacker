@@ -3,8 +3,9 @@ from django.contrib.auth.models import User
 
 
 class Budget(models.Model):
+    name = models.CharField(max_length=100)
     start_date = models.DateField()
-    end_date = models.DateField()
+    end_date = models.DateField(null=True)
 
 class Category(models.Model):
     name = models.CharField(max_length=100)

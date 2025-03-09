@@ -20,6 +20,10 @@ const theme = createTheme({
     fontFamily: "Arial, sans-serif",
     subtitle1: {
       color: "#1878B4",
+      fontSize: 30,
+    },
+    subtitle2: {
+      color: "#1878B4",
       fontSize: 24,
     },
     body1: {

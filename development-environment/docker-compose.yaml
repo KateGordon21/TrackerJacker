@@ -16,7 +16,7 @@ services:
         source: ../frontend/vite.config.ts
         target: /home/node/app/vite.config.ts
     environment:
-      - VITE_BACKEND_URL=http://django-api:7004/
+      - VITE_BACKEND_URL=http://localhost:7004/
       - VITE_APP_NAME=Tracker Jacker
     ports:
       - 7001:5173

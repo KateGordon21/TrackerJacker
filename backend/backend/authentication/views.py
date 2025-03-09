@@ -21,7 +21,7 @@ def register(request):
             'user': UserSerializer(user).data,
             'token': token.key
         }, status=status.HTTP_201_CREATED)
-    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'detail': serializer.errors}, status=status.HTTP_400_BAD_REQUEST)
 
 # Custom Auth Token (Login)
 @api_view(['POST'])
@@ -39,7 +39,7 @@ def login(request):
             'token': token.key,
             'user': UserSerializer(user).data
         })
-    return Response({'error': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
+    return Response({'detail': 'Invalid credentials'}, status=status.HTTP_400_BAD_REQUEST)
 
 # User Details View (Authenticated User)
 @api_view(['GET'])
@@ -56,7 +56,7 @@ def user_details(request):
 @permission_classes([IsAuthenticated])
 def delete_user(request):
     """
-    Get the details of the currently authenticated user.
+    Delete the currently authenticated user.
     """
     user = request.user
     user.delete()
@@ -71,3 +71,43 @@ def logout(request):
     """
     request.user.auth_token.delete()
     return Response(status=status.HTTP_204_NO_CONTENT)
+
+# Get User by ID
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_by_id(request, id):
+    """
+    Get the details of a user by their ID.
+    """
+    try:
+        user = User.objects.get(pk=id)
+        return Response(UserSerializer(user).data)
+    except User.DoesNotExist:
+        return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+# Get User by Username
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_by_username(request, username):
+    """
+    Get the details of a user by their username.
+    """
+    try:
+        user = User.objects.get(username=username)
+        return Response(UserSerializer(user).data)
+    except User.DoesNotExist:
+        return Response({'detail': 'User not found.'}, status=status.HTTP_404_NOT_FOUND)
+
+# Update User Details
+@api_view(['PUT'])
+@permission_classes([IsAuthenticated])
+def update_user(request):
+    """
+    Update the details of the currently authenticated user.
+    """
+    user = request.user
+    serializer = UserSerializer(user, data=request.data)
+    if serializer.is_valid():
+        updated_user = serializer.save()
+        return Response(UserSerializer(updated_user).data)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
